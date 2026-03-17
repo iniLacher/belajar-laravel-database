@@ -113,5 +113,33 @@ class QueryBuilderTest extends TestCase
       Log::info(json_encode($item));
     });
   }
+
+  public function testUpdate(){
+    $this->testInsert();
+    DB::table('categories')->where('id', '=', 'FOOD')->update([
+      'name' => 'Makanan'
+    ]);
+
+    $collection = DB::table('categories')->where('name', '=', 'Makanan')->get();
+    $this->assertCount(1, $collection);
+    $collection->each(function ($item) {
+      Log::info(json_encode($item));  
+    });
+  }
+
+  public function testUpsert() {
+    $this->testInsert();
+    DB::table('categories')->updateOrInsert([
+      'id' => 'FOOD'
+    ], [
+      'name' => 'Makanan'
+    ]);
+
+    $collection = DB::table('categories')->where('name', '=', 'Makanan')->get();
+    $this->assertCount(1, $collection);
+    $collection->each(function ($item) {
+      Log::info(json_encode($item));  
+    });
+  }
   
 }
