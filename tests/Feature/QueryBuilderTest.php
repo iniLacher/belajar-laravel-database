@@ -141,5 +141,24 @@ class QueryBuilderTest extends TestCase
       Log::info(json_encode($item));  
     });
   }
-  
+
+  public function testDelete() {
+    $this->testInsert();
+
+    DB::table('categories')->where('id', '=', 'FOOD')->delete();
+
+    $collection = DB::table('categories')->where('id', '=', 'FOOD')->get();
+    $this->assertCount(0, $collection);
+    $collection->each(function ($item) {
+      Log::info(json_encode($item));  
+    });
+  }
+
+  public function insertTableProduct() {
+    $this->testInsert();
+    DB::table('prouct')
+    ->insert(['id' => '1', 'name' => 'Laptop', 'created_at' => '2022-01-01 00:00:00', 'category_id' => 'LAPTOP']);
+    DB::table('prouct')
+    ->insert(['id' => '2', 'name' => 'Meja', 'created_at' => '2022-01-01 00:00:00', 'category_id' => 'MEJA']);
+  }
 }
