@@ -156,9 +156,21 @@ class QueryBuilderTest extends TestCase
 
   public function insertTableProduct() {
     $this->testInsert();
-    DB::table('prouct')
-    ->insert(['id' => '1', 'name' => 'Laptop', 'created_at' => '2022-01-01 00:00:00', 'category_id' => 'LAPTOP']);
-    DB::table('prouct')
-    ->insert(['id' => '2', 'name' => 'Meja', 'created_at' => '2022-01-01 00:00:00', 'category_id' => 'MEJA']);
+    DB::table('product')
+    ->insert(['id' => '1', 'name' => 'Laptop','description' => 'Laptop', 'created_at' => '2022-01-01 00:00:00', 'category_id' => 'LAPTOP']);
+    DB::table('product')
+    ->insert(['id' => '2', 'name' => 'Meja', 'description' => 'Meja', 'created_at' => '2022-01-01 00:00:00', 'category_id' => 'MEJA']);
+  }
+
+  public function testQueryBuilderJoin( ) {
+    $this->insertTableProduct();
+
+    $collection = DB::table('product')
+    ->join('categories', 'product.category_id', '=', 'categories.id')
+    ->select('product.id','product.name', 'categories.name as category_name')->get();
+    $this->assertCount(2, $collection);
+    $collection->each(function ($item) {
+      Log::info(json_encode($item));  
+    });
   }
 }
