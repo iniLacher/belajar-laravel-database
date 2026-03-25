@@ -165,7 +165,7 @@ class QueryBuilderTest extends TestCase
   public function testQueryBuilderJoin( ) {
     $this->insertTableProduct();
 
-    $collection = DB::table('product')
+    $collection = DB::table('product ')
     ->join('categories', 'product.category_id', '=', 'categories.id')
     ->select('product.id','product.name', 'categories.name as category_name')->get();
     $this->assertCount(2, $collection);
