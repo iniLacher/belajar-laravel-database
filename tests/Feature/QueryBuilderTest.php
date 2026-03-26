@@ -4,7 +4,6 @@ namespace Tests\Feature;
 
 use Illuminate\Database\Query\Builder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Tests\TestCase;
@@ -20,7 +19,15 @@ class QueryBuilderTest extends TestCase
         name varchar(100) not null,
         created_at timestamp
     )");
+    DB::statement("create table if not exists product (
+        id VARCHAR(100) NOT NULL PRIMARY KEY,
+        name VARCHAR(225) NOT NULL ,
+        description TEXT,
+        category_id VARCHAR(100) NOT NULL,
+        created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        CONSTRAINT fk_category_id foreign key(category_id) REFERENCES categories(id))");
     DB::delete("delete from categories");
+    DB::delete("delete from product");
   } 
   public function testInsert() {
     DB::table('categories')->insert([
@@ -157,20 +164,20 @@ class QueryBuilderTest extends TestCase
   public function insertTableProduct() {
     $this->testInsert();
     DB::table('product')
-    ->insert(['id' => '1', 'name' => 'Laptop','description' => 'Laptop', 'created_at' => '2022-01-01 00:00:00', 'category_id' => 'LAPTOP']);
+    ->insert(['id' => '1', 'name' => 'Gadget','description' => 'gadget', 'created_at' => '2022-01-01 00:00:00', 'category_id' => 'GADGET']);
     DB::table('product')
-    ->insert(['id' => '2', 'name' => 'Meja', 'description' => 'Meja', 'created_at' => '2022-01-01 00:00:00', 'category_id' => 'MEJA']);
+    ->insert(['id' => '2', 'name' => 'Food', 'description' => 'Food', 'created_at' => '2022-01-01 00:00:00', 'category_id' => 'FOOD']);
   }
 
   public function testQueryBuilderJoin( ) {
     $this->insertTableProduct();
 
-    $collection = DB::table('product ')
+    $collection = DB::table('product')
     ->join('categories', 'product.category_id', '=', 'categories.id')
     ->select('product.id','product.name', 'categories.name as category_name')->get();
     $this->assertCount(2, $collection);
     $collection->each(function ($item) {
-      Log::info(json_encode($item));  
+      Log::info(json_encode($item));
     });
   }
 }
