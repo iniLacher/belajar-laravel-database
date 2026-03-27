@@ -23,6 +23,7 @@ class QueryBuilderTest extends TestCase
         id VARCHAR(100) NOT NULL PRIMARY KEY,
         name VARCHAR(225) NOT NULL ,
         description TEXT,
+        price INT NOT NULL DEFAULT 0,
         category_id VARCHAR(100) NOT NULL,
         created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
         CONSTRAINT fk_category_id foreign key(category_id) REFERENCES categories(id))");
@@ -230,5 +231,52 @@ class QueryBuilderTest extends TestCase
     });
       Log::info('end chunk');
 
+  }
+
+  public function testLazy() {
+    $this->insertManyCategories();
+
+    $collection = DB::table('categories')->orderBy('id')->lazy(10)->take(5);
+    self::assertNotNull($collection);
+
+    $collection->each(function ($item) {
+      Log::info(json_encode($item));
+    });
+  }
+
+  public function testCursor() {
+    $this->insertManyCategories();
+
+    $collection = DB::table('categories')->orderBy('id')->cursor();
+    self::assertNotNull($collection);
+
+    $collection->each(function ($item) {
+      Log::info(json_encode($item));
+    });
+  }
+
+  public function insertProductWithPrice() {
+    $this->insertCategories();
+
+    DB::table('product')->insert(['id' => '1','name' => 'Samsung','description' => 'Samsung','created_at' => '2022-01-01 00:00:00','category_id' => 'GADGET','price' => 8500]);
+    DB::table('product')->insert(['id' => '2','name' => 'Asus','description' => 'Asus','created_at' => '2022-01-01 00:00:00','category_id' => 'LAPTOP','price' => 15000]);
+    DB::table('product')->insert(['id' => '3','name' => 'Rollet','description' => 'Rollet','created_at' => '2022-01-01 00:00:00','category_id' => 'FASHION','price' => 160000]);
+    DB::table('product')->insert(['id' => '4','name' => 'Iphone','description' => 'Iphone','created_at' => '2022-01-01 00:00:00','category_id' => 'GADGET','price' => 27000]);
+    DB::table('product')->insert(['id' => '5','name' => 'Mie Ayam','description' => 'Mie Ayam','created_at' => '2022-01-01 00:00:00','category_id' => 'FOOD','price' => 50]);
+  }
+
+  public function testAgregate() {
+    $this->insertProductWithPrice();
+
+    $collection = DB::table('product')->count("id");
+    self::assertEquals(5,$collection);
+
+    $collection = DB::table('product')->min("id");
+    self::assertEquals(1,$collection);
+
+
+    // $collection->each(function ($item) {
+    //   Log::info(json_encode($item));;
+    // });
   }
 }
