@@ -279,4 +279,46 @@ class QueryBuilderTest extends TestCase
     //   Log::info(json_encode($item));;
     // });
   }
+
+  public function testQueryBuilderRow() {
+    $this->insertProductWithPrice();
+
+   $collection = DB::table("product") ->select(
+      DB::raw('count(*) as total'),
+      DB::raw('min(price) as min_price'),
+      DB::raw('max(price) as max_price')
+    )->get();
+    self::assertEquals(5, $collection[0]->total);
+    self::assertEquals(50, $collection[0]->min_price);
+    self::assertEquals(160000, $collection[0]->max_price);
+    }
+
+    public function insertProductFood() {
+      DB::table('product')->insert(['id' => '6','name' => 'Mie Ayam Bakar','description' => 'Mie Ayam Bakar','created_at' => '2022-01-01 00:00:00','category_id' => 'FOOD','price' => 12000]);
+      DB::table('product')->insert(['id' => '7','name' => 'Bakso','description' => 'Bakso','created_at' => '2022-01-01 00:00:00','category_id' => 'FOOD','price' => 20000]);
+    }
+
+    public function testGroupBy () {
+      $this->insertProductWithPrice();
+      $this->insertProductFood();
+
+      $collection = DB::table('product')->select('category_id', DB::raw('count(*) as total'))->groupBy('category_id')
+      ->orderBy('category_id', 'desc')
+      ->get();
+      self::assertEquals(1, $collection[0]->total);
+      self::assertEquals(2, $collection[1]->total);
+      self::assertEquals('LAPTOP', $collection[0]->category_id);
+    }
+    public function testGroupByHaving () {
+      $this->insertProductWithPrice();
+      $this->insertProductFood();
+
+      $collection = DB::table('product')->select('category_id', DB::raw('count(*) as total'))->groupBy('category_id')
+      ->having(DB::raw('count(*)'), '>', 3)
+      ->orderBy('category_id', 'desc')
+      ->get();
+      self::assertCount(0, $collection);
+     
+    }
+    
 }
