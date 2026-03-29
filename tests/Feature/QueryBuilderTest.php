@@ -318,7 +318,55 @@ class QueryBuilderTest extends TestCase
       ->orderBy('category_id', 'desc')
       ->get();
       self::assertCount(0, $collection);
-     
+    }
+
+
+    public function testLocking() {
+      $this->insertProductWithPrice();
+      DB::transaction(function () {
+         $collection = DB::table('product')    
+          ->where('id', '=', '1')
+          ->lockForUpdate()
+          ->get();
+        self::assertCount(1, $collection);
+      });
+    }
+
+    public function testPaginate() {
+      $this->insertCategories();
+
+      $paginate = DB::table('categories')->paginate(perPage: 2, page: 1);
+      self::assertCount(2, $paginate);
+      self::assertEquals(2, $paginate->perPage());
+      self::assertEquals(1, $paginate->currentPage());
+      self::assertEquals(3, $paginate->lastPage());
+      self::assertEquals(5, $paginate->total());
+
+      $collection = $paginate->items();
+      foreach($collection as $item) {
+        Log::info(json_encode($item));
+      }
+    }
+
+    public function testIterationPaginate() {
+      $this->insertCategories();
+      $page = 1;
+      while(true){
+        $paginate = DB::table('categories')->paginate(perPage: 2, page: $page);
+
+        if ($paginate->isEmpty()) {
+          break;
+        } else {
+          $page++;
+          $collection = $paginate->items();
+          self::assertLessThanOrEqual(2, count($collection));
+          foreach($collection as $item) {
+          Log::info(json_encode($item));
+          }
+        }
+      }
+
+    
     }
     
 }
